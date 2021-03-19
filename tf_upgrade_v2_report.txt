@@ -1,0 +1,207 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 9 files
+Detected 14 issues that require attention
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+File: NLRL/core/induction.py
+--------------------------------------------------------------------------------
+NLRL/core/induction.py:33:60: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+NLRL/core/induction.py:40:51: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+NLRL/core/induction.py:253:24: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+File: NLRL/core/rl.py
+--------------------------------------------------------------------------------
+NLRL/core/rl.py:206:16: WARNING: Summary API writing function tf.contrib.summary.scalar now requires a 'step' argument; inserting default of tf.compat.v1.train.get_or_create_global_step().
+NLRL/core/rl.py:206:16: WARNING: tf.contrib.summary.scalar requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+NLRL/core/rl.py:211:16: WARNING: Summary API writing function tf.contrib.summary.histogram now requires a 'step' argument; inserting default of tf.compat.v1.train.get_or_create_global_step().
+NLRL/core/rl.py:211:16: WARNING: tf.contrib.summary.histogram requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+NLRL/core/rl.py:222:34: WARNING: tf.contrib.summary.create_file_writer requires manual check. tf.contrib.summary.create_file_writer() has been ported to the new tf.compat.v2.summary.create_file_writer(), which no longer re-uses existing event files for the same logdir; instead it always opens a new writer/file. The python writer objects must be re-used explicitly if the reusing behavior is desired.
+NLRL/core/rl.py:263:34: WARNING: tf.contrib.summary.all_summary_ops requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+NLRL/core/rl.py:290:28: WARNING: tf.contrib.summary.all_summary_ops requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+NLRL/core/rl.py:301:8: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+NLRL/core/rl.py:303:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+NLRL/core/rl.py:323:24: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+NLRL/core/rl.py:375:34: WARNING: tf.contrib.summary.all_summary_ops requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+================================================================================
+Detailed log follows:
+
+================================================================================
+================================================================================
+Input tree: 'NLRL'
+================================================================================
+--------------------------------------------------------------------------------
+Processing file 'NLRL/main.py'
+ outputting to 'NLRL_tf2/main.py'
+--------------------------------------------------------------------------------
+
+31:8: INFO: Renamed 'tf.reset_default_graph' to 'tf.compat.v1.reset_default_graph'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'NLRL/core/induction.py'
+ outputting to 'NLRL_tf2/core/induction.py'
+--------------------------------------------------------------------------------
+
+24:34: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+29:17: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+29:53: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+33:60: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+33:60: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+35:80: INFO: tf.random_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+35:80: INFO: Renamed 'tf.random_normal_initializer' to 'tf.compat.v1.random_normal_initializer'
+38:17: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+38:53: INFO: Renamed 'tf.AUTO_REUSE' to 'tf.compat.v1.AUTO_REUSE'
+40:51: WARNING: tf.get_variable requires manual check. tf.get_variable returns ResourceVariables by default in 2.0, which have well-defined semantics and are stricter about shapes. You can disable this behavior by passing use_resource=False, or by calling tf.compat.v1.disable_resource_variables().
+40:51: INFO: Renamed 'tf.get_variable' to 'tf.compat.v1.get_variable'
+42:79: INFO: tf.random_normal_initializer requires manual check. Initializers no longer have the dtype argument in the constructor or partition_info argument in the __call__ method.
+The calls have been converted to compat.v1 for safety (even though they may already have been correct).
+42:79: INFO: Renamed 'tf.random_normal_initializer' to 'tf.compat.v1.random_normal_initializer'
+110:17: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+115:20: INFO: Added keywords to args of function 'tf.transpose'
+118:15: INFO: Added keywords to args of function 'tf.transpose'
+125:33: INFO: Added keywords to args of function 'tf.transpose'
+146:22: INFO: Added keywords to args of function 'tf.reduce_sum'
+148:36: INFO: Added keywords to args of function 'tf.reduce_sum'
+164:15: INFO: Added keywords to args of function 'tf.reduce_max'
+191:20: INFO: Renamed 'tf.train.RMSPropOptimizer' to 'tf.compat.v1.train.RMSPropOptimizer'
+194:46: INFO: Renamed 'tf.train.get_or_create_global_step' to 'tf.compat.v1.train.get_or_create_global_step'
+200:20: INFO: Renamed 'tf.random_uniform' to 'tf.random.uniform'
+203:16: INFO: Added keywords to args of function 'tf.reduce_mean'
+203:38: INFO: Renamed 'tf.log' to 'tf.math.log'
+203:71: INFO: Renamed 'tf.log' to 'tf.math.log'
+212:30: INFO: Added keywords to args of function 'tf.reduce_sum'
+214:15: INFO: Added keywords to args of function 'tf.gradients'
+239:13: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+240:22: INFO: Renamed 'tf.initializers.global_variables' to 'tf.compat.v1.initializers.global_variables'
+253:24: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'NLRL/core/symbolicEnvironment.py'
+ outputting to 'NLRL_tf2/core/symbolicEnvironment.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'NLRL/core/clause.py'
+ outputting to 'NLRL_tf2/core/clause.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'NLRL/core/rl.py'
+ outputting to 'NLRL_tf2/core/rl.py'
+--------------------------------------------------------------------------------
+
+44:26: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+46:28: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+47:38: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+48:44: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+49:31: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+51:30: INFO: Renamed 'tf.batch_gather' to 'tf.compat.v1.batch_gather'
+54:28: INFO: Added keywords to args of function 'tf.gradients'
+55:25: INFO: Renamed 'tf.train.RMSPropOptimizer' to 'tf.compat.v1.train.RMSPropOptimizer'
+57:66: INFO: Renamed 'tf.train.get_or_create_global_step' to 'tf.compat.v1.train.get_or_create_global_step'
+62:21: INFO: Renamed 'tf.train.Saver' to 'tf.compat.v1.train.Saver'
+65:20: INFO: Added keywords to args of function 'tf.reduce_sum'
+65:34: INFO: Renamed 'tf.log' to 'tf.math.log'
+78:26: INFO: Renamed 'tf.batch_gather' to 'tf.compat.v1.batch_gather'
+80:38: INFO: Added keywords to args of function 'tf.reduce_sum'
+81:26: INFO: Renamed 'tf.where' to 'tf.compat.v1.where'
+95:30: INFO: Added keywords to args of function 'tf.reduce_sum'
+97:15: INFO: Added keywords to args of function 'tf.gradients'
+205:51: INFO: Adding `True` argument to tf.contrib.summary.always_record_summaries in anticipation of it being renamed to tf.compat.v2.summary.record_if()
+205:51: INFO: Renamed 'tf.contrib.summary.always_record_summaries' to 'tf.compat.v2.summary.record_if'
+206:16: INFO: Added keywords to args of function 'tf.contrib.summary.scalar'
+206:16: INFO: Renamed keyword argument for tf.contrib.summary.scalar from tensor to data
+206:16: WARNING: Summary API writing function tf.contrib.summary.scalar now requires a 'step' argument; inserting default of tf.compat.v1.train.get_or_create_global_step().
+206:16: WARNING: tf.contrib.summary.scalar requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+206:16: INFO: Renamed 'tf.contrib.summary.scalar' to 'tf.compat.v2.summary.scalar'
+210:51: INFO: Adding `True` argument to tf.contrib.summary.always_record_summaries in anticipation of it being renamed to tf.compat.v2.summary.record_if()
+210:51: INFO: Renamed 'tf.contrib.summary.always_record_summaries' to 'tf.compat.v2.summary.record_if'
+211:16: INFO: Added keywords to args of function 'tf.contrib.summary.histogram'
+211:16: INFO: Renamed keyword argument for tf.contrib.summary.histogram from tensor to data
+211:16: WARNING: Summary API writing function tf.contrib.summary.histogram now requires a 'step' argument; inserting default of tf.compat.v1.train.get_or_create_global_step().
+211:16: WARNING: tf.contrib.summary.histogram requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+211:16: INFO: Renamed 'tf.contrib.summary.histogram' to 'tf.compat.v2.summary.histogram'
+214:18: INFO: Renamed 'tf.initializers.global_variables' to 'tf.compat.v1.initializers.global_variables'
+222:34: INFO: Added keywords to args of function 'tf.contrib.summary.create_file_writer'
+222:34: WARNING: tf.contrib.summary.create_file_writer requires manual check. tf.contrib.summary.create_file_writer() has been ported to the new tf.compat.v2.summary.create_file_writer(), which no longer re-uses existing event files for the same logdir; instead it always opens a new writer/file. The python writer objects must be re-used explicitly if the reusing behavior is desired.
+222:34: INFO: Renamed 'tf.contrib.summary.create_file_writer' to 'tf.compat.v2.summary.create_file_writer'
+228:16: INFO: Renamed 'tf.contrib.summary.initialize' to 'tf.compat.v1.summary.initialize'
+228:52: INFO: Renamed 'tf.get_default_graph' to 'tf.compat.v1.get_default_graph'
+236:13: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+263:34: WARNING: tf.contrib.summary.all_summary_ops requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+263:34: INFO: Renamed 'tf.contrib.summary.all_summary_ops' to 'tf.compat.v1.summary.all_v2_summary_ops'
+290:28: WARNING: tf.contrib.summary.all_summary_ops requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+290:28: INFO: Renamed 'tf.contrib.summary.all_summary_ops' to 'tf.compat.v1.summary.all_v2_summary_ops'
+301:8: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+303:12: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+311:13: INFO: Renamed 'tf.Session' to 'tf.compat.v1.Session'
+323:24: WARNING: *.save requires manual check. (This warning is only applicable if the code saves a tf.Keras model) Keras model.save now saves to the Tensorflow SavedModel format by default, instead of HDF5. To continue saving to HDF5, add the argument save_format='h5' to the save() function.
+332:39: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+341:16: INFO: Added keywords to args of function 'tf.reduce_mean'
+346:32: INFO: Renamed 'tf.log' to 'tf.math.log'
+347:16: INFO: Added keywords to args of function 'tf.reduce_sum'
+375:34: WARNING: tf.contrib.summary.all_summary_ops requires manual check. tf.contrib.summary.* functions have been migrated best-effort to tf.compat.v2.summary.* equivalents where possible, but the resulting code is not guaranteed to work, so please check carefully. For more information about the new summary API, see the Effective TF 2.0 migration document or check the updated TensorBoard tutorials.
+375:34: INFO: Renamed 'tf.contrib.summary.all_summary_ops' to 'tf.compat.v1.summary.all_v2_summary_ops'
+389:24: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+406:24: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+408:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+410:26: INFO: Renamed 'tf.layers.dense' to 'tf.compat.v1.layers.dense'
+412:22: INFO: Renamed 'tf.layers.dense' to 'tf.compat.v1.layers.dense'
+420:15: INFO: Added keywords to args of function 'tf.reduce_sum'
+423:15: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+423:33: INFO: Renamed 'tf.GraphKeys' to 'tf.compat.v1.GraphKeys'
+434:24: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+435:24: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+440:13: INFO: Renamed 'tf.variable_scope' to 'tf.compat.v1.variable_scope'
+442:26: INFO: Renamed 'tf.layers.dense' to 'tf.compat.v1.layers.dense'
+443:22: INFO: Renamed 'tf.layers.dense' to 'tf.compat.v1.layers.dense'
+448:25: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+449:26: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+450:23: INFO: Added keywords to args of function 'tf.reduce_sum'
+451:25: INFO: Renamed 'tf.train.RMSPropOptimizer' to 'tf.compat.v1.train.RMSPropOptimizer'
+452:62: INFO: Renamed 'tf.train.get_or_create_global_step' to 'tf.compat.v1.train.get_or_create_global_step'
+457:15: INFO: Renamed 'tf.get_collection' to 'tf.compat.v1.get_collection'
+457:33: INFO: Renamed 'tf.GraphKeys' to 'tf.compat.v1.GraphKeys'
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'NLRL/core/__init__.py'
+ outputting to 'NLRL_tf2/core/__init__.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'NLRL/core/rules.py'
+ outputting to 'NLRL_tf2/core/rules.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'NLRL/core/setup.py'
+ outputting to 'NLRL_tf2/core/setup.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+Processing file 'NLRL/core/ilp.py'
+ outputting to 'NLRL_tf2/core/ilp.py'
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+

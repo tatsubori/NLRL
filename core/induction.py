@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 from collections import OrderedDict
 import pandas as pd
-import tensorflow.contrib.eager as tfe
+#import tensorflow.contrib.eager as tfe  #tf.contribu.eager.Checkpoint => tf.train.Checkpoint
 import os
 from core.rules import RulesManager
 from core.clause import Predicate
@@ -21,25 +21,26 @@ class BaseDILP(object):
         self.previous_definition = {}
 
     def _construct_graph(self):
-        self.tf_input_valuation = tf.placeholder(shape=[None, self.base_valuation.shape[0]], dtype=tf.float32)
+        #self.tf_input_valuation = tf.compat.v1.placeholder(shape=[None, self.base_valuation.shape[0]], dtype=tf.float32)
+        self.tf_input_valuation = tf.Tensor(op=None, value_index=None, dtype=None)
         self.tf_result_valuation = self._construct_deduction()
 
     def __init__rule_weights(self, scope_name="rule_weights"):
         if self.independent_clause:
-            with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE):
+            with tf.compat.v1.variable_scope(scope_name, reuse=tf.compat.v1.AUTO_REUSE):
                 for predicate, clauses in self.rules_manager.all_clauses.items():
                     self.rule_weights[predicate] = []
                     for i in range(len(clauses)):
-                        self.rule_weights[predicate].append(tf.get_variable(predicate.name+"_rule_weights"+str(i),
+                        self.rule_weights[predicate].append(tf.compat.v1.get_variable(predicate.name+"_rule_weights"+str(i),
                                                                     [len(clauses[i]),],
-                                                                    initializer=tf.random_normal_initializer,
+                                                                    initializer=tf.compat.v1.random_normal_initializer,
                                                                     dtype=tf.float32))
         else:
-            with tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE):
+            with tf.compat.v1.variable_scope(scope_name, reuse=tf.compat.v1.AUTO_REUSE):
                 for predicate, clauses in self.rules_manager.all_clauses.items():
-                    self.rule_weights[predicate] = tf.get_variable(predicate.name + "_rule_weights",
+                    self.rule_weights[predicate] = tf.compat.v1.get_variable(predicate.name + "_rule_weights",
                                                                    [len(clauses[0]), len(clauses[1])],
-                                                                   initializer=tf.random_normal_initializer,
+                                                                   initializer=tf.compat.v1.random_normal_initializer,
                                                                    dtype=tf.float32)
 
     def show_definition(self, sess):
@@ -107,22 +108,22 @@ class BaseDILP(object):
         if session:
             result = session.run([self.tf_result_valuation], feed_dict={self.tf_input_valuation:[valuation]})[0]
         else:
-            with tf.Session() as sess:
+            with tf.compat.v1.Session() as sess:
                 result = sess.run([self.tf_result_valuation], feed_dict={self.tf_input_valuation:[valuation]})[0]
         return result[0]
 
     def _construct_deduction(self):
-        valuation = tf.transpose(self.tf_input_valuation)
+        valuation = tf.transpose(a=self.tf_input_valuation)
         for _ in range(self.rules_manager.program_template.forward_n):
             valuation = self.inference_step(valuation)
-        return tf.transpose(valuation)
+        return tf.transpose(a=valuation)
 
     def inference_step(self, valuation):
         deduced_valuation = tf.zeros_like(valuation)
         # deduction_matrices = self.rules_manager.deducation_matrices[predicate]
         for predicate, matrix in self.rules_manager.deduction_matrices.items():
             deduced_valuation += BaseDILP.inference_single_predicate(valuation, matrix, self.rule_weights[predicate])
-        return deduced_valuation+tf.transpose(self.tf_input_valuation)
+        return deduced_valuation+tf.transpose(a=self.tf_input_valuation)
         #return prob_sum(deduced_valuation, valuation)
 
     @staticmethod
@@ -143,9 +144,9 @@ class BaseDILP(object):
             valuations = tf.stack(result_valuations[i])
             prob_rule_weights = tf.nn.softmax(rule_weights[i])[:, None, None]
             if c_p==None:
-                c_p = tf.reduce_sum(prob_rule_weights*valuations, axis=0)
+                c_p = tf.reduce_sum(input_tensor=prob_rule_weights*valuations, axis=0)
             else:
-                c_p = prob_sum(c_p, tf.reduce_sum(prob_rule_weights*valuations, axis=0))
+                c_p = prob_sum(c_p, tf.reduce_sum(input_tensor=prob_rule_weights*valuations, axis=0))
         return c_p
 
     @staticmethod
@@ -161,7 +162,7 @@ class BaseDILP(object):
         Y1 = tf.gather_nd(params=valuation, indices=X1)
         Y2 = tf.gather_nd(params=valuation, indices=X2)
         Z = Y1*Y2
-        return tf.reduce_max(Z, axis=1)
+        return tf.reduce_max(input_tensor=Z, axis=1)
 
     def all_variables(self):
         if self.independent_clause:
@@ -188,19 +189,19 @@ class SupervisedDILP(BaseDILP):
 
     def _construct_train(self):
         self.tf_loss = self.loss()
-        optimizer = tf.train.RMSPropOptimizer(learning_rate=self.learning_rate)
+        optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate=self.learning_rate)
         grads, loss = self.grad()
         self.tf_train = optimizer.apply_gradients(zip(grads, self.all_variables()),
-                                  global_step=tf.train.get_or_create_global_step())
+                                  global_step=tf.compat.v1.train.get_or_create_global_step())
 
     def loss(self, batch_size=-1):
         labels = np.array(self.training_data.values(), dtype=np.float32)
         outputs = tf.gather(self.tf_result_valuation[0], np.array(self.training_data.keys(), dtype=np.int32))
         if batch_size>0:
-            index = tf.random_uniform([batch_size], 0, len(labels))
+            index = tf.random.uniform([batch_size], 0, len(labels))
             labels = labels[index]
             outputs = tf.gather(outputs, index)
-        loss = -tf.reduce_mean(labels*tf.log(outputs+1e-10)+(1-labels)*tf.log(1-outputs+1e-10))
+        loss = -tf.reduce_mean(input_tensor=labels*tf.math.log(outputs+1e-10)+(1-labels)*tf.math.log(1-outputs+1e-10))
         return loss
 
     def grad(self):
@@ -209,9 +210,9 @@ class SupervisedDILP(BaseDILP):
         regularization = 0
         for weights in self.all_variables():
             weights = tf.nn.softmax(weights)
-            regularization += tf.reduce_sum(tf.sqrt(weights))*weight_decay
+            regularization += tf.reduce_sum(input_tensor=tf.sqrt(weights))*weight_decay
         loss_value += regularization/len(self.all_variables())
-        return tf.gradients(loss_value, self.all_variables()), loss_value
+        return tf.gradients(ys=loss_value, xs=self.all_variables()), loss_value
 
     def train(self, steps=300, name=None):
         """
@@ -236,8 +237,8 @@ class SupervisedDILP(BaseDILP):
 
         losses = []
 
-        with tf.Session() as sess:
-            sess.run([tf.initializers.global_variables()])
+        with tf.compat.v1.Session() as sess:
+            sess.run([tf.compat.v1.initializers.global_variables()])
             for i in range(steps):
                 _, loss = sess.run([self.tf_train, self.tf_loss], feed_dict={self.tf_input_valuation:[self.base_valuation]})
                 loss_avg = float(loss)
@@ -299,7 +300,8 @@ class RLDILP(BaseDILP):
 
     def create_checkpoint(self, name):
         if name:
-            checkpoint = tfe.Checkpoint(**self.get_str2weights())
+            #checkpoint = tfe.Checkpoint(**self.get_str2weights())
+            checkpoint = tf.train.Checkpoint(**self.get_str2weights())
             checkpoint_dir = "./model/"+name
             checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
             try:

@@ -28,7 +28,7 @@ def generalized_test(task, name, algo):
     variations = env.all_variations
 
     for variation in [""]+list(variations):
-        tf.reset_default_graph()
+        tf.compat.v1.reset_default_graph()
         print("==========="+variation+"==============")
         result = starter(task, name, "evaluate", variation)
         pprint(result)

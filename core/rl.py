@@ -41,28 +41,28 @@ class ReinforceLearner(object):
         self.log_steps = 100
 
     def _construct_train(self, learning_rate):
-        self.tf_returns = tf.placeholder(shape=[None], dtype=tf.float32)
+        self.tf_returns = tf.compat.v1.placeholder(shape=[None], dtype=tf.float32)
         #self.tf_episode_n = tf.placeholder(shape=[])
-        self.tf_advantage = tf.placeholder(shape=[None], dtype=tf.float32)
-        self.tf_additional_discount = tf.placeholder(shape=[None], dtype=tf.float32)
-        self.tf_actions_valuation_indexes = tf.placeholder(shape=[None, self.env.action_n], dtype=tf.int32)
-        self.tf_action_index = tf.placeholder(shape=[None], dtype=tf.int32)
+        self.tf_advantage = tf.compat.v1.placeholder(shape=[None], dtype=tf.float32)
+        self.tf_additional_discount = tf.compat.v1.placeholder(shape=[None], dtype=tf.float32)
+        self.tf_actions_valuation_indexes = tf.compat.v1.placeholder(shape=[None, self.env.action_n], dtype=tf.int32)
+        self.tf_action_index = tf.compat.v1.placeholder(shape=[None], dtype=tf.int32)
         self._construct_action_prob()
-        indexed_action_prob = tf.batch_gather(self.tf_action_prob, self.tf_action_index[:, None])[:, 0]
+        indexed_action_prob = tf.compat.v1.batch_gather(self.tf_action_prob, self.tf_action_index[:, None])[:, 0]
         self.tf_loss = self.loss(indexed_action_prob)
         #self.tf_loss = tf.Print(self.tf_loss, [self.tf_loss])
-        self.tf_gradients = tf.gradients(self.tf_loss, self.agent.all_variables())
-        self.optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
+        self.tf_gradients = tf.gradients(ys=self.tf_loss, xs=self.agent.all_variables())
+        self.optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate=learning_rate)
         try:
-            self.tf_train = self.optimizer.minimize(self.tf_loss, tf.train.get_or_create_global_step(),
+            self.tf_train = self.optimizer.minimize(self.tf_loss, tf.compat.v1.train.get_or_create_global_step(),
                                                     var_list=self.agent.all_variables())
         except Exception as e:
             # For random agent
             pass
-        self.saver = tf.train.Saver()
+        self.saver = tf.compat.v1.train.Saver()
 
     def loss(self, indexed_action_prob):
-        rl_loss = (-tf.reduce_sum(tf.log(tf.clip_by_value(indexed_action_prob, 1e-5, 1.0))
+        rl_loss = (-tf.reduce_sum(input_tensor=tf.math.log(tf.clip_by_value(indexed_action_prob, 1e-5, 1.0))
                )*self.tf_advantage*self.tf_additional_discount)
         #excess_penalty = 0.01*tf.reduce_sum(tf.nn.relu(tf.reduce_sum(self.tf_action_eval, axis=1)-1.0)**2)
         #regularization_loss = 1e-4*tf.reduce_mean(tf.stack([tf.nn.l2_loss(v) for v in self.agent.all_variables()]))
@@ -75,10 +75,10 @@ class ReinforceLearner(object):
         """
         if self.type == "DILP":
             # slice the action valuations from the valuation vectors
-            action_eval = tf.batch_gather(self.agent.tf_result_valuation, self.tf_actions_valuation_indexes)
+            action_eval = tf.compat.v1.batch_gather(self.agent.tf_result_valuation, self.tf_actions_valuation_indexes)
             self.tf_action_eval = action_eval
-            sum_action_eval = tf.tile(tf.reduce_sum(action_eval, axis=1, keepdims=True), [1, self.env.action_n])
-            action_prob = tf.where(sum_action_eval > 1.0,
+            sum_action_eval = tf.tile(tf.reduce_sum(input_tensor=action_eval, axis=1, keepdims=True), [1, self.env.action_n])
+            action_prob = tf.compat.v1.where(sum_action_eval > 1.0,
                                    action_eval / sum_action_eval,
                                    action_eval + (1.0 - sum_action_eval) / float(self.env.action_n))
             # action_prob = action_eval / sum_action_eval
@@ -92,9 +92,9 @@ class ReinforceLearner(object):
         regularization = 0
         for weights in self.agent.all_variables():
             weights = tf.nn.softmax(weights)
-            regularization += tf.reduce_sum(tf.sqrt(weights))*weight_decay
+            regularization += tf.reduce_sum(input_tensor=tf.sqrt(weights))*weight_decay
         loss_value += regularization/len(self.agent.all_variables())
-        return tf.gradients(loss_value, self.agent.all_variables())
+        return tf.gradients(ys=loss_value, xs=self.agent.all_variables())
 
     def sample_episode(self, sess, max_steps=99999):
         action_prob_history = []
@@ -202,16 +202,16 @@ class ReinforceLearner(object):
 
     def summary_scalar(self, name, scalar):
         if self.summary_writer:
-            with self.summary_writer.as_default(), tf.contrib.summary.always_record_summaries():
-                tf.contrib.summary.scalar(name, scalar)
+            with self.summary_writer.as_default(), tf.compat.v2.summary.record_if(True):
+                tf.compat.v2.summary.scalar(name=name, data=scalar, step=tf.compat.v1.train.get_or_create_global_step())
 
     def summary_histogram(self, name, data):
         if self.summary_writer:
-            with self.summary_writer.as_default(), tf.contrib.summary.always_record_summaries():
-                tf.contrib.summary.histogram(name, data)
+            with self.summary_writer.as_default(), tf.compat.v2.summary.record_if(True):
+                tf.compat.v2.summary.histogram(name=name, data=data, step=tf.compat.v1.train.get_or_create_global_step())
 
     def setup_train(self, sess, auto_load=True):
-        sess.run([tf.initializers.global_variables()])
+        sess.run([tf.compat.v1.initializers.global_variables()])
         if self.name:
             if auto_load:
                 try:
@@ -219,13 +219,13 @@ class ReinforceLearner(object):
                     self.load(sess, path)
                 except Exception as e:
                     print(e)
-            self.summary_writer = tf.contrib.summary.create_file_writer("./model/"+self.name, flush_millis=10000)
+            self.summary_writer = tf.compat.v2.summary.create_file_writer(logdir="./model/"+self.name, flush_millis=10000)
             self.summary_scalar("returns", self.tf_returns[0])
             self.summary_histogram("advantages", self.tf_advantage)
             self.summary_scalar("loss", self.tf_loss)
             #self.summary_histogram("weights", tf.concat(self.agent.all_variables(), axis=0))
             with self.summary_writer.as_default():
-                tf.contrib.summary.initialize(graph=tf.get_default_graph(), session=sess)
+                tf.compat.v1.summary.initialize(graph=tf.compat.v1.get_default_graph(), session=sess)
         else:
             self.summary_writer = None
             # model definition code goes here
@@ -233,7 +233,7 @@ class ReinforceLearner(object):
 
     def evaluate(self, repeat=100):
         results = []
-        with tf.Session() as sess:
+        with tf.compat.v1.Session() as sess:
             self.setup_train(sess)
             self.agent.log(sess)
             rules = self.agent.get_predicates_definition(sess, threshold=0.05) if self.type == "DILP" else []
@@ -260,7 +260,7 @@ class ReinforceLearner(object):
                                                                for action_index in action_history]}
 
         if self.batched:
-            ops = [self.tf_train, tf.contrib.summary.all_summary_ops(), self.tf_gradients] if self.name else [self.tf_train]
+            ops = [self.tf_train, tf.compat.v1.summary.all_v2_summary_ops(), self.tf_gradients] if self.name else [self.tf_train]
             if self.type == "DILP":
                 feed_dict = {self.tf_advantage:np.array(advantage),
                              self.tf_additional_discount:np.array(additional_discount),
@@ -287,7 +287,7 @@ class ReinforceLearner(object):
                                                           valuation_history,valuation_index_history):
                 ops = [self.tf_train, self.tf_loss, self.tf_action_prob]
                 if first == True and self.name:
-                    ops += [tf.contrib.summary.all_summary_ops()]
+                    ops += [tf.compat.v1.summary.all_v2_summary_ops()]
                     first = False
                 result = sess.run(ops, {self.tf_advantage: [adv],
                                  self.tf_additional_discount: [acc_discount],
@@ -308,7 +308,7 @@ class ReinforceLearner(object):
             self.critic.load(path + "/critic.pl")
 
     def train(self):
-        with tf.Session() as sess:
+        with tf.compat.v1.Session() as sess:
             self.setup_train(sess)
             self.minibatch_buffer = self.get_minibatch_buffer(sess, batch_size=self.batch_size,
                                                               end_by_episode=self.end_by_episode)
@@ -329,7 +329,7 @@ class PPOLearner(ReinforceLearner):
     def __init__(self, agent, enviornment, learning_rate, critic=None,
                  steps=300, name=None, discounting=1.0, optimizer="RMSProp"):
         self.epsilon = 0.2
-        self.tf_previous_action_prob = tf.placeholder(tf.float32, shape=[None])
+        self.tf_previous_action_prob = tf.compat.v1.placeholder(tf.float32, shape=[None])
         super(PPOLearner, self).__init__(agent, enviornment, learning_rate, critic,
                                          steps, name, discounting, batched=True, optimizer="RMSProp",
                                          end_by_episode=False, minibatch_size=100)
@@ -338,13 +338,13 @@ class PPOLearner(ReinforceLearner):
 
     def loss(self, new_prob):
         ratio = tf.clip_by_value(new_prob, 1e-5, 1.0) / self.tf_previous_action_prob
-        return -tf.reduce_mean(tf.minimum(ratio*self.tf_advantage,
+        return -tf.reduce_mean(input_tensor=tf.minimum(ratio*self.tf_advantage,
                                           tf.clip_by_value(ratio, 1.-self.epsilon, 1.+self.epsilon)*
                                          self.tf_advantage))
 
     def entropy_loss(self, action_probs):
-        entropy = -action_probs*tf.log(tf.clip_by_value(action_probs, 1e-5, 1.0))
-        return -tf.reduce_sum(entropy)
+        entropy = -action_probs*tf.math.log(tf.clip_by_value(action_probs, 1e-5, 1.0))
+        return -tf.reduce_sum(input_tensor=entropy)
 
     def get_action_prob(self, states, action_indexes):
         action_probs = []
@@ -372,7 +372,7 @@ class PPOLearner(ReinforceLearner):
                                                           for action_index in action_history]}
 
         for j in range(10):
-            ops = [self.tf_train, tf.contrib.summary.all_summary_ops()] if self.name else [self.tf_train]
+            ops = [self.tf_train, tf.compat.v1.summary.all_v2_summary_ops()] if self.name else [self.tf_train]
             if self.type == "DILP":
                 feed_dict = {self.tf_advantage:np.array(advantage),
                              self.tf_additional_discount:np.array(additional_discount),
@@ -386,7 +386,7 @@ class PPOLearner(ReinforceLearner):
 
 class RandomAgent(object):
     def __init__(self, action_size):
-        self.tf_input = tf.placeholder(dtype=tf.float32, shape=[None, 1])
+        self.tf_input = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None, 1])
         ones = tf.ones_like(self.tf_input)/ action_size
         self.tf_output = ones * tf.ones([1, action_size])/ action_size
         self.state_encoding = "vector"
@@ -403,13 +403,13 @@ class NeuralAgent(object):
     def __init__(self, unit_list, action_size, state_size):
         self.unit_list = unit_list
         self.action_size = action_size
-        self.tf_input = tf.placeholder(dtype=tf.float32, shape=[None, state_size])
+        self.tf_input = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None, state_size])
         outputs = self.tf_input
-        with tf.variable_scope("NN"):
+        with tf.compat.v1.variable_scope("NN"):
             for unit_n in unit_list:
-                outputs = tf.layers.dense(outputs, unit_n, activation=tf.nn.relu,)
+                outputs = tf.compat.v1.layers.dense(outputs, unit_n, activation=tf.nn.relu,)
                                       #kernel_initializer=tf.initializers.random_normal())
-            outputs = tf.layers.dense(outputs, action_size, activation=tf.nn.softmax,)
+            outputs = tf.compat.v1.layers.dense(outputs, action_size, activation=tf.nn.softmax,)
                                       #kernel_initializer=tf.initializers.random_normal())
         self.tf_output = outputs
         self.state_encoding = "vector"
@@ -417,10 +417,10 @@ class NeuralAgent(object):
     def critic_loss(self, reward, current_state_value, next_state_value):
         td_error = reward - current_state_value + self.discounting*next_state_value
         loss = tf.square(td_error)
-        return tf.reduce_sum(loss)
+        return tf.reduce_sum(input_tensor=loss)
 
     def all_variables(self):
-        return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="NN")
+        return tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope="NN")
 
     def log(self, sess):
         pass
@@ -431,30 +431,30 @@ class NeuralCritic(object):
                  involve_steps=False):
         self.unit_list = unit_list
         self.state2vector = state2vector
-        self.tf_input = tf.placeholder(dtype=tf.float32, shape=[None, state_size])
-        self.tf_steps = tf.placeholder(dtype=tf.float32, shape=[None])
+        self.tf_input = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None, state_size])
+        self.tf_steps = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None])
         if involve_steps:
             outputs = tf.concat([self.tf_input, self.tf_steps[:, np.newaxis]], axis=1)
         else:
             outputs = self.tf_input
-        with tf.variable_scope("critic"):
+        with tf.compat.v1.variable_scope("critic"):
             for unit_n in unit_list:
-                outputs = tf.layers.dense(outputs, unit_n, activation=tf.nn.relu)
-            outputs = tf.layers.dense(outputs, 1)
+                outputs = tf.compat.v1.layers.dense(outputs, unit_n, activation=tf.nn.relu)
+            outputs = tf.compat.v1.layers.dense(outputs, 1)
         self.involve_steps = involve_steps
         self.tf_output = outputs
         self.state_encoding = "vector"
         self.discounting = discounting
-        self.tf_reward = tf.placeholder(dtype=tf.float32, shape=[None])
-        self.tf_returns = tf.placeholder(dtype=tf.float32, shape=[None])
-        self.tf_loss = tf.reduce_sum(tf.square(self.tf_output[:, 0] - self.tf_returns))
-        self.optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate)
-        self.tf_train = self.optimizer.minimize(self.tf_loss, tf.train.get_or_create_global_step(),
+        self.tf_reward = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None])
+        self.tf_returns = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None])
+        self.tf_loss = tf.reduce_sum(input_tensor=tf.square(self.tf_output[:, 0] - self.tf_returns))
+        self.optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate=learning_rate)
+        self.tf_train = self.optimizer.minimize(self.tf_loss, tf.compat.v1.train.get_or_create_global_step(),
                                                 var_list=self.all_variables())
 
 
     def all_variables(self):
-        return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope="critic")
+        return tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope="critic")
 
     def log(self, sess):
         pass
